@@ -53,7 +53,7 @@ public class MainFragment extends Fragment implements ImageAdapter.ItemClickCall
     static ArrayList<String> posters, ratings, titles, overviews, dates;
     String JSONResults;
     ArrayList<String> resultsForAdapter = new ArrayList<>();
-
+    static ArrayList<ArrayList<String>> comments;
     static ArrayList<String> ids;
     static ArrayList<String> youtubes;
     static ArrayList<String> youtubes2;
@@ -137,6 +137,7 @@ public class MainFragment extends Fragment implements ImageAdapter.ItemClickCall
                 .putExtra("date",dates.get(p))
                 .putExtra("youtube", youtubes.get(p))
                 .putExtra("youtube2", youtubes2.get(p))
+                .putExtra("comments", comments.get(p))
                 .putExtra("poster",posters.get(p));
 
         startActivity(intent);
@@ -263,6 +264,8 @@ public class MainFragment extends Fragment implements ImageAdapter.ItemClickCall
                     }
 
 
+
+                    comments = getRewiewsFromIds(ids);
                     return getPathsFromJSON(JSONResults);
                 }catch (JSONException e){
                     return null;
@@ -289,6 +292,81 @@ public class MainFragment extends Fragment implements ImageAdapter.ItemClickCall
     }
 
 
+
+    public ArrayList<ArrayList<String>> getRewiewsFromIds(ArrayList<String> ids) {
+
+        while (true) {
+            ArrayList<ArrayList<String>> results = new ArrayList<>();
+            for (int i = 0; i < ids.size(); i++) {
+                HttpURLConnection urlConnection = null;
+                BufferedReader reader = null;
+                String JSONResult;
+
+                try {
+                    String urlString;
+                    urlString = "http://api.themoviedb.org/3/movie/" + ids.get(i) + "/reviews?api_key=" + API_KEY;
+                    URL url = new URL(urlString);
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
+
+                    //Read the input stream into a String
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) {
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line + "\n");
+                    }
+                    if (buffer.length() == 0) {
+                        return null;
+                    }
+                    JSONResult = buffer.toString();
+                    try {
+                        results.add(getCommentsFromJson(JSONResult));
+                    } catch (JSONException e) {
+                        return null;
+                    }
+                } catch (Exception e) {
+
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+            }
+
+            return results;
+        }
+
+    }
+
+    public ArrayList<String> getCommentsFromJson(String JSONStringParam)throws JSONException{
+        JSONObject JSONString = new JSONObject(JSONStringParam);
+        JSONArray reviewsArray = JSONString.getJSONArray("results");
+        ArrayList<String> results = new ArrayList<>();
+        if(reviewsArray.length()==0){
+            results.add("No Reviews Found :'-( ");
+            return results;
+        }
+        for(int i=0; i<reviewsArray.length(); i++){
+            JSONObject result = reviewsArray.getJSONObject(i);
+            results.add(result.getString("content"));
+        }
+        return results;
+
+    }
 
 
     String[] getYoutubesFromIds(ArrayList<String> ids, int position) {

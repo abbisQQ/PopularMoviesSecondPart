@@ -2,15 +2,22 @@ package com.example.babis.popularmovies;
 
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+
+import static com.example.babis.popularmovies.MainFragment.comments;
 
 
 /**
@@ -18,10 +25,10 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailsFragment extends Fragment {
 
-    static String youtube,youtube2;
     TextView ratings, overviews, titles, dates;
+    static String youtube,youtube2,overview,date,rating,title,poster,reviews;
     ImageView posters;
-
+    static ArrayList<String> comments;
     public MovieDetailsFragment() {
         // Required empty public constructor
     }
@@ -64,6 +71,38 @@ public class MovieDetailsFragment extends Fragment {
                 youtube2 = (intent.getStringExtra("youtube2"));
             }
 
+            if (intent.hasExtra("overview")) {
+                comments = intent.getStringArrayListExtra("comments");
+                for (int i = 0; i < comments.size(); i++) {
+                    LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.reviews_linear_layout);
+                    View empty = new View(getActivity());
+                    TextView tv = new TextView(getActivity());
+                    RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    tv.setLayoutParams(p);
+                    int paddingPixels = 10;
+                    float density = getActivity().getResources().getDisplayMetrics().density;
+                    int paddingDP = (int) (paddingPixels * density);
+                    tv.setPadding(0, paddingDP, 0, paddingDP);
+                    RelativeLayout.LayoutParams l = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    l.height = 1;
+                    empty.setLayoutParams(l);
+                    empty.setBackgroundColor(Color.BLACK);
+
+
+                    tv.setText(comments.get(i));
+                    layout.addView(empty);
+                    layout.addView(tv);
+
+                    if (reviews == null) {
+                        reviews = comments.get(i);
+                    } else {
+                        reviews += "divider123" + comments.get(i);
+                    }
+
+                }
+            }
 
 
 
